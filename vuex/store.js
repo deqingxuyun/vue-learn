@@ -21,6 +21,11 @@ const actions = {
     return commit('mutationsReduceCount', n)
   }
 }
+/*
+ *@description:所谓的getter就是store的计算属性，就是把数据计算好后供组件调用，免得每个组件需要做同样数据处理的时候都要封装数据转换函数
+ *@author: yxd
+ *@date:
+*/
 const getters = {
   getterCount(state) {
     return (state.count )
