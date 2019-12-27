@@ -1,12 +1,11 @@
 <template>
   <div class="table-box">
     <div class="table-box-container" ref="table">
-      <el-table :data="tableData" style="width: 100%">
-        <el-table-column prop="date" label="日期" width="150"></el-table-column>
-        <!-- <el-table-column prop="date" label="日期" width="150"></el-table-column> -->
+      <!-- <el-table :data="tableData" style="width: 100%" >
+            <el-table-column prop="date" label="日期" width="150"></el-table-column>
         <el-table-column label="配送信息">
-          <el-table-column prop="name" label="姓名" width="120"></el-table-column>
-          <el-table-column prop="province" label="省份" width="120"></el-table-column>
+          <el-table-column prop="date" label="姓名" width="120"></el-table-column>
+          <el-table-column prop="date" label="省份" width="120"></el-table-column>
         </el-table-column>
 
         <el-table-column label="地址">
@@ -15,6 +14,23 @@
         </el-table-column>
 
         <el-table-column prop="zip" label="邮编" width="120"></el-table-column>
+      </el-table>-->
+      <el-table :data="tableData" style="width: 100%">
+        <el-table-column
+          v-for="(mock,index) in mocks"
+          :key="index"
+          :prop="mock.prop"
+          :label="mock.label"
+          :width="mock.width"
+        >
+          <el-table-column
+            v-for="(childMock ,childIndex) in mock.children"
+            :key="childIndex"
+            :prop="childMock.prop"
+            :label="childMock.label"
+            :width="childMock.width"
+          ></el-table-column>
+        </el-table-column>
       </el-table>
     </div>
   </div>
@@ -83,6 +99,58 @@ export default {
           address: "上海市普陀区金沙江路 1518 弄",
           zip: 200333
         }
+      ],
+      mocks: [
+        {
+          label: "日期",
+          prop: "date",
+          width: 150,
+          children: []
+        },
+        {
+          label: "配送信息",
+          prop: "",
+          width: "",
+          children: [
+            {
+              label: "姓名",
+              prop: "date",
+              width: 120,
+              children: []
+            },
+            {
+              label: "省份",
+              prop: "date",
+              width: 120,
+              children: []
+            }
+          ]
+        },
+        {
+          label: "地址",
+          prop: "",
+          width: "",
+          children: [
+            {
+              label: "市区",
+              prop: "date",
+              width: 120,
+              children: []
+            },
+            {
+              label: "地址",
+              prop: "date",
+              width: 300,
+              children: []
+            }
+          ]
+        },
+        {
+          label: "邮编",
+          prop: "zip",
+          width: 120,
+          children: []
+        }
       ]
     };
   },
@@ -120,6 +188,56 @@ export default {
      */
     filterNode(fakeArr, callBack) {
       Array.prototype.forEach.call(fakeArr, callBack);
+    },
+    /*
+     *@description:canvas画线
+     *@author: yxd
+     *@date: 2019-12-16 11:23:39
+     */
+    canvasLine(parentElement, canvas, Width, Height) {
+      //    let canvas = document.createElement("canvas");
+      this.setAttributeID(canvas, "width", Width);
+      this.setAttributeID(canvas, "height", Height);
+      this.setAttributeID(canvas, "class", "line-canv");
+      parentElement.appendChild(canvas);
+      console.log("canvas对象", canvas);
+      let ctx = canvas.getContext("2d");
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Width, Height);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#fff";
+      ctx.stroke();
+    },
+    /*
+     *@description:额外div显示
+     *@author: yxd
+     *@date: 2019-12-16 13:32:56
+     */
+    extraInfo(parentElement, typeNode, content, ...arg) {
+      let currentDiv = document.createElement(typeNode);
+      currentDiv.innerHTML = content;
+      if (arg.length == 2) {
+        this.setAttributeID(currentDiv, arg[0], arg[1]);
+      }
+      parentElement.appendChild(currentDiv);
+      // console.log('我要看看',arg);
+    },
+    /*
+     *@description:去掉hover
+     *@author: yxd
+     *@date: 2019-12-16 14:46:32
+     */
+    deleteHover() {
+      const obj = document.getElementsByClassName(
+        "el-table--enable-row-hover"
+      )[0];
+      //   console.log("element", obj);
+      let clz = obj.getAttribute("class");
+
+      clz = clz.replace("el-table--enable-row-hover", "");
+
+      obj.setAttribute("class", clz);
     }
   },
   mounted() {
@@ -169,7 +287,7 @@ export default {
         console.log("我靠，我看看", tableHeardNodesNeedIndex);
       }
     });
-    // 拿到表头的第一个th,并设置斜线类
+    // 第二步拿到表头的第一个th,
 
     let fristTableHearTr =
       tableHeardNodes[tableHeardNodesNeedIndex[0]].childNodes[0];
@@ -180,10 +298,50 @@ export default {
       this.setAttributeID(fristTableHearTh, "class", "diagonal");
       this.setAttributeID(fristTableHearTh, "id", "diagonal");
       let fristTableHearThDom = this.getByIdDom("diagonal");
-      console.log("表头第一Th宽", fristTableHearThDom.clientHeight,fristTableHearThDom.clientWidth);
-    }, 0);
+      let fristTableHearThDomHeight = fristTableHearThDom.clientHeight;
+      let fristTableHearThDomWidth = fristTableHearThDom.clientWidth;
+      console.log(
+        "表头第一Th宽",
+        fristTableHearThDom.clientHeight,
+        fristTableHearThDom.clientWidth
+      );
+      // 第三步   创建canvas,用于画线
+      let canvas = document.createElement("canvas");
+      this.setAttributeID(canvas, "width", fristTableHearThDomWidth);
+      this.setAttributeID(canvas, "height", fristTableHearThDomHeight);
+      this.setAttributeID(canvas, "class", "line-canv");
+      fristTableHearThDom.appendChild(canvas);
+      console.log("canvas对象", canvas);
+      let ctx = canvas.getContext("2d");
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(fristTableHearThDomWidth, fristTableHearThDomHeight);
+      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = "rgba(250,250,250)";
+      ctx.stroke();
+      // 第四步   创建div,用于额外显示
+      this.extraInfo(fristTableHearThDom, "div", "避雷器", "class", "sell");
 
-    //  this.setAttributeID(fristTableHearTh,'id','fristTableHearTh');
+      console.log("表身", tableNodes[needDom[1]].childNodes[0]);
+      this.setAttributeID(
+        tableNodes[needDom[1]].childNodes[0],
+        "id",
+        "tableContent"
+      );
+      let tableContent = this.getByIdDom("tableContent");
+      let allNodes = tableContent.querySelectorAll("tr");
+      console.log("所有的tr节点", allNodes);
+      this.filterNode(allNodes, (item, index) => {
+        this.extraInfo(
+          item.childNodes[0],
+          "div",
+          "12:12:12",
+          "class",
+          "cell cell2"
+        );
+      });
+      this.deleteHover();
+    }, 0);
   }
 };
 </script>
@@ -196,12 +354,12 @@ export default {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  border: 1px solid red;
+  /* border: 1px solid red; */
   .table-box-container {
     width: 80%;
     height: 50%;
     margin-top: 100px;
-    border: 1px solid rgb(173, 243, 243);
+    /* border: 1px solid rgb(173, 243, 243); */
     /deep/ .el-table__header {
       .is-group {
         th {
@@ -211,24 +369,41 @@ export default {
     }
     /deep/ .el-table {
       tr {
-        background-color: #1b3649;
+        background-color: RGB(27, 54, 73);
+        &:nth-of-type(2n + 1) {
+          background-color: RGB(13, 30, 45);
+        }
       }
     }
   }
   /deep/ .diagonal {
-    /* background-color: aquamarine !important; */
-    &:before {
-      content: "";
+    position: relative;
+    .line-canv {
       position: absolute;
-      width: 1px;
-      height: 176.7px; /*这里需要自己调整，根据td的宽度和高度*/
       top: 0;
       left: 0;
-      background-color: #ebeef5;
-      display: block;
-      transform: rotate(-57deg); /*这里需要自己调整，根据线的位置*/
-      transform-origin: top;
+      /* border: 1px solid red; */
     }
+    .cell {
+      position: absolute;
+      bottom: 10px;
+      right: 40px;
+    }
+    .sell {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+    }
+  }
+  /deep/ .cell2 {
+    /* border: 1px solid red; */
+  }
+  /deep/ .cell {
+    text-align: center;
+  }
+  /deep/ .el-table__row--striped {
+    background-color: RGB(28, 55, 74);
+    /* border: 1px solid red; */
   }
 }
 </style>
